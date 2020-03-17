@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use yew_router::{prelude::*, Switch, switch::Permissive , route::Route};
+use crate::graph::Graph;
 
 pub struct App;
 
@@ -7,10 +8,6 @@ pub struct App;
 pub enum AppRouter {
     #[to= "/!"]
     RootPath,
-    #[to= "/hello!"]
-    HelloPath,
-    #[to= "/awesome!"]
-    AwasomePath,
     #[to = "/page-not-found"]
     PageNotFound(Permissive<String>),
 }
@@ -23,7 +20,7 @@ impl Component for App {
         App {}
     }
 
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         true
     }
 
@@ -33,9 +30,7 @@ impl Component for App {
                 <Router<AppRouter, ()>
                     render = Router::render(|switch: AppRouter | {
                         match switch {
-                            AppRouter::RootPath => html!{<h2>{"this is root"}</h2>},
-                            AppRouter::HelloPath => html!{<h2>{"Hello world"}</h2>},
-                            AppRouter::AwasomePath => html!{<h2>{"My awesome Yew with Yew-Router and Parcel application!"}</h2>},
+                            AppRouter::RootPath => html!{<div><h2>{"this is root"}</h2> <Graph></Graph></div>},
                             AppRouter::PageNotFound(Permissive(None)) => html!{"Page not found"},
                             AppRouter::PageNotFound(Permissive(Some(missed_route))) => html!{format!("Page '{}' not found", missed_route)}
                         }

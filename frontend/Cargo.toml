@@ -7,6 +7,7 @@ name = "covplot"
 readme = "./README.md"
 repository = "https://github.com/jbowens/covplot.git"
 version = "0.13.0"
+edition = "2018"
 
 [lib]
 crate-type = ["cdylib"]
@@ -14,6 +15,7 @@ crate-type = ["cdylib"]
 [dependencies]
 cfg-if = "0.1"
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
 console_error_panic_hook = { version = "0.1", optional = true }
 wee_alloc = { version = "0.4", optional = true }
 serde = "1.0"
@@ -22,10 +24,28 @@ dotenv = "0.15"
 failure = "0.1"
 yew = { version = "0.14", features = ["toml", "yaml", "msgpack", "cbor", "web_sys"]}
 yew-router = { version = "0.11", features = ["web_sys"]}
-web-sys = { version = "0.3", features = ["HtmlCanvasElement"] }
+plotters = "0.2"
+chrono = "0.4"
+csv = "1.1"
+futures = { version = "0.1.26", default-features = false }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    'console',
+    'HtmlCanvasElement',
+    'Headers',
+    'Request',
+    'RequestInit',
+    'RequestMode',
+    'Response',
+    'Window',
+]
 
 [build]
 target="wasm32-unknown-unknown"
 
 [profile.release]
 lto = true
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"

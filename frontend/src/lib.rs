@@ -4,12 +4,20 @@
 extern crate cfg_if;
 
 extern crate wasm_bindgen;
+extern crate wasm_bindgen_futures;
 extern crate web_sys;
 extern crate yew;
 extern crate yew_router;
+extern crate plotters;
+extern crate chrono;
+extern crate csv;
 use wasm_bindgen::prelude::*;
 
 mod app;
+mod data;
+mod data_source;
+mod graph;
+mod graph_render;
 use app::App;
 
 cfg_if! {
