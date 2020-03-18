@@ -55,10 +55,12 @@ impl Component for Graph {
         };
 
         html! {
-            <div>
-                <canvas width=600 height=400 ref=self.canvas_ref.clone()>
-                </canvas>
+            <div id="graph">
                 {countries_selector}
+                <div id="canvas-container">
+                    <canvas width=1200 height=800 ref=self.canvas_ref.clone()>
+                    </canvas>
+                </div>
             </div>
         }
     }

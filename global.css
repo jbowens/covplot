@@ -1,0 +1,31 @@
+body {
+    margin: 0;
+    background: #000;
+    color: #FFF;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#graph {
+    display: flex;
+}
+
+#graph canvas {
+    flex-grow: 0;
+    height: 90vh;
+}
+
+#canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0 2em;
+}
+
+#canvas-container {
+    flex: 1;
+}
