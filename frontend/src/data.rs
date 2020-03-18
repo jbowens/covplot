@@ -1,5 +1,48 @@
 use std::fmt;
 use chrono::prelude::*;
+use std::collections::HashMap;
+
+pub struct DataSet {
+    pub series : Vec<Series>,
+    pub regions : Vec<(String,Vec<Region>)>,
+}
+
+impl DataSet {
+    pub fn new(raw_series : Vec<Series>) -> DataSet {
+        // Remove all series for minor localities.
+        let series : Vec<Series> = raw_series
+            .into_iter()
+            .filter(|s| !s.region.is_minor_locality())
+            .collect();
+
+        // Construct a map from country to regions.
+        let mut countries_map : HashMap<String, Vec<Region>> = HashMap::new();
+        for s in series.iter() {
+            match countries_map.get_mut(&s.region.country) {
+                None => {
+                    countries_map.insert(s.region.country.clone(), vec![s.region.clone()]);
+                },
+                Some(states) => {
+                    states.push(s.region.clone());
+                },
+            }
+        }
+
+        let mut regions : Vec<(String, Vec<Region>)> = countries_map
+            .into_iter()
+            .map(|(country, mut regions)| {
+                // Sort the states/provinces within this country by their names.
+                regions.sort_by(|a, b| a.state.cmp(&b.state));
+                (country, regions)
+            })
+            .collect();
+
+        // Sort the countries by their names.
+        regions.sort_by(|(a, _), (b, _)| a.cmp(&b));
+
+        DataSet{series, regions}
+    }
+}
 
 pub struct Series {
     pub region : Region,
@@ -13,9 +56,20 @@ pub struct Point {
     pub value : u64,
 }
 
+#[derive(Clone, Debug)]
 pub struct Region {
     pub country : String,
     pub state : String,
+}
+
+impl Region {
+    pub fn is_minor_locality(&self) -> bool {
+        // The data source contains some cities and counties
+        // where data is more granular. These always have a
+        // comma separting the minor locality from the state
+        // or province.
+        self.state.contains(",")
+    }
 }
 
 impl fmt::Display for Region {

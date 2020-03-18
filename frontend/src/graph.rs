@@ -8,12 +8,12 @@ use web_sys::HtmlCanvasElement;
 
 pub struct Graph {
     canvas_ref : NodeRef,
-    data : Option<Result<Vec<Series>, String>>,
+    data : Option<Result<DataSet, String>>,
     link: ComponentLink<Self>,
 }
 
 pub enum Msg {
-    GotSeriesData(Result<Vec<Series>, String>)
+    GotSeriesData(Result<DataSet, String>)
 }
 
 impl Component for Graph {
@@ -40,9 +40,15 @@ impl Component for Graph {
     fn view(&self) -> Html {
         let countries_selector = match &self.data {
             None => html!{<div>{"Loading..."}</div>},
-            Some(Ok(all_series)) => html!{
-                <ul>
-                {for all_series.iter().map(|s| html!{<li>{format!("{}", s.region)}</li>} )}
+            Some(Ok(data_set)) => html!{
+                <ul id="regions">
+                {for data_set
+                    .regions
+                    .iter()
+                    .map(|s| html!{
+                        <li>{format!("{}", s.0)}</li>
+                    })
+                }
                 </ul>
             },
             Some(Err(e)) => html!{<div>{format!("Error: {}", e)}</div>},

@@ -30,7 +30,12 @@ impl Component for App {
                 <Router<AppRouter, ()>
                     render = Router::render(|switch: AppRouter | {
                         match switch {
-                            AppRouter::RootPath => html!{<div><h2>{"this is root"}</h2> <Graph></Graph></div>},
+                            AppRouter::RootPath => html!{
+                                <div>
+                                    <h2>{"covplot"}</h2>
+                                    <Graph></Graph>
+                                </div>
+                            },
                             AppRouter::PageNotFound(Permissive(None)) => html!{"Page not found"},
                             AppRouter::PageNotFound(Permissive(Some(missed_route))) => html!{format!("Page '{}' not found", missed_route)}
                         }

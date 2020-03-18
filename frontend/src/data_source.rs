@@ -11,13 +11,14 @@ static CSSE_TIME_SERIES_DEATHS : &str = "https://raw.githubusercontent.com/CSSEG
 
 // TODO: fixup errors
 
-pub async fn query() -> Result<Vec<Series>, String> {
+pub async fn query() -> Result<DataSet, String> {
     let data = download_csv(CSSE_TIME_SERIES_CONFIRMED)
         .await
         .map_err(|e| format!("error downloading csv: {:?}", e))?;
 
     parse_csv(DataType::Confirmed, data.as_bytes())
         .map_err(|e| format!("unable to parse CSSE csv data: {:?}", e))
+        .map(DataSet::new)
 }
 
 fn parse_csv(typ : DataType, raw_data : &[u8]) -> Result<Vec<Series>, csv::Error> {
