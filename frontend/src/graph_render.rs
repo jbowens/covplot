@@ -1,7 +1,7 @@
 use plotters::prelude::*;
 use web_sys::HtmlCanvasElement;
 use crate::data::*;
-use num_format::{Locale, ToFormattedString, ToFormattedStr};
+use num_format::{Locale, ToFormattedString};
 
 // TODO: create an appropriate error type
 pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -> Result<(), &'static str> {
@@ -37,13 +37,20 @@ pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -
 
     for (idx, &s) in series.iter().enumerate() {
         chart.draw_series(
-            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), &Palette99::pick(idx)),
+            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), Into::<ShapeStyle>::into(&Palette99::pick(idx)).stroke_width(2)),
         ).unwrap()
         .label(&s.region.country)
         .legend(move |(x, y)| {
-            Rectangle::new([(x - 5, y - 5), (x + 5, y + 5)], &Palette99::pick(idx))
+            Rectangle::new([(x - 5, y - 5), (x + 5, y + 5)], Palette99::pick(idx).filled())
         });
     }
+
+    chart.configure_series_labels()
+            .background_style(&BLACK.mix(0.8))
+            .border_style(&RGBColor(100, 100, 100))
+            .label_font(("sans-serif", 15).into_font().color(&WHITE))
+            .position(SeriesLabelPosition::MiddleLeft)
+            .draw().unwrap();
 
     Ok(())
 }

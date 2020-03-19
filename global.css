@@ -2,12 +2,43 @@ body {
     margin: 0;
     background: #000;
     color: #FFF;
+    font-family: 'Sen', sans-serif;
 }
 
 ul {
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+#regions {
+    font-size: 0.8em;
+    padding: 0.5em;
+    max-height: 90vh;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#regions::-webkit-scrollbar {
+    display: none;
+}
+#regions li {
+    color: #CCC;
+}
+#regions li.selected {
+    font-weight: bold;
+    color: #c9587a;
+}
+#regions li:hover {
+    color: #FFF;
+    cursor: default;
+}
+
+h2 {
+    font-size: 1em;
+    margin: 0.5em;
+    color: #DDD;
+    font-family: 'Helvetica';
 }
 
 #graph {
@@ -18,5 +49,11 @@ ul {
     flex-grow: 0;
 }
 
-#canvas-container {
+.source {
+    font-size: 0.8em;
+    color: #888;
+    margin: 2em 5em;
+    width: 60%;
 }
+a { color: #c9587a; text-decoration: none; }
+a:hover { color: #f05181; }

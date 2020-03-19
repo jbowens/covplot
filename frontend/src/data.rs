@@ -10,13 +10,14 @@ pub struct DataSet {
 impl DataSet {
     pub fn new(dates : Vec<chrono::NaiveDate>, raw_series : Vec<Series>) -> DataSet {
         // Remove all series for minor localities.
-        let series : Vec<Series> = raw_series
+        let mut series : Vec<Series> = raw_series
             .into_iter()
             .filter(|s| !s.region.is_minor_locality())
             .collect();
 
         // Construct a map from country to regions.
         let mut countries_map : HashMap<String, Vec<Region>> = HashMap::new();
+        let mut countries_series : HashMap<String, Series> = HashMap::new();
         for s in series.iter() {
             match countries_map.get_mut(&s.region.country) {
                 None => {
@@ -26,7 +27,25 @@ impl DataSet {
                     states.push(s.region.clone());
                 },
             }
+
+            if !s.region.state.is_empty() {
+                match countries_series.get_mut(&s.region.country) {
+                    None => {
+                        let mut aggregate_series = s.clone();
+                        aggregate_series.region.state = "".to_string();
+                        countries_series.insert(s.region.country.clone(), aggregate_series);
+                    },
+                    Some(existing_series) => {
+                        let pts = existing_series.points.as_mut_slice();
+                        for i in 0..pts.len() {
+                            pts[i] = pts[i] + s.points[i];
+                        }
+                    },
+                }
+            }
         }
+        let mut countries_agg = countries_series.into_iter().map(|(_, series)| series).collect();
+        series.append(&mut countries_agg);
 
         let mut regions : Vec<(String, Vec<Region>)> = countries_map
             .into_iter()
@@ -51,6 +70,7 @@ impl DataSet {
     }
 }
 
+#[derive(Clone)]
 pub struct Series {
     pub region : Region,
     pub data_type: DataType,
@@ -88,6 +108,7 @@ impl fmt::Display for Region {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum SeriesType {
     Change,
     Total,

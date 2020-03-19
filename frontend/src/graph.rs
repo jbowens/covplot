@@ -14,7 +14,8 @@ macro_rules! log {
 }
 
 pub enum Msg {
-    GotSeriesData(Result<DataSet, String>)
+    GotSeriesData(Result<DataSet, String>),
+    ToggleRegion(Region),
 }
 
 pub struct Graph {
@@ -71,7 +72,15 @@ impl Component for Graph {
             Msg::GotSeriesData(res) => {
                 self.data = Some(res);
                 self.redraw_canvas();
-            }
+            },
+            Msg::ToggleRegion(region) => {
+                if self.selected.contains(&region) {
+                    self.selected.retain(|r| region != *r);
+                } else {
+                    self.selected.push(region.clone());
+                };
+                self.redraw_canvas();
+            },
         }
         true
     }
@@ -84,8 +93,16 @@ impl Component for Graph {
                 {for data_set
                     .regions
                     .iter()
-                    .map(|s| html!{
-                        <li>{format!("{}", s.0)}</li>
+                    .map(|r| {
+                        let li_class = match self.selected.contains(&Region{country: r.0.clone(), state: "".to_string()}) {
+                            true => "selected",
+                            false => "",
+                        };
+
+                        // TODO: stop cloning regions every which way
+                        let reg = Region::new(&r.0.clone(), "");
+
+                        html!{<li class=li_class onclick=self.link.callback(move |_| Msg::ToggleRegion(reg.clone()))>{format!("{}", r.0)}</li>}
                     })
                 }
                 </ul>
@@ -99,6 +116,10 @@ impl Component for Graph {
                 <div id="canvas-container">
                     <canvas width=1200 height=800 ref=self.canvas_ref.clone()>
                     </canvas>
+                    <div class="source">
+                        {"Source: Data is pulled from John Hopkins University CSSE: "}<a href="https://github.com/CSSEGISandData/COVID-19">{"github.com/CSSEGISandData/COVID-19"}</a>
+                        {". Data is downloaded directly from the JHU CSSE GitHub repository."}
+                    </div>
                 </div>
             </div>
         }
