@@ -1,6 +1,7 @@
 use plotters::prelude::*;
 use web_sys::HtmlCanvasElement;
 use crate::data::*;
+use num_format::{Locale, ToFormattedString, ToFormattedStr};
 
 // TODO: create an appropriate error type
 pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -> Result<(), &'static str> {
@@ -14,8 +15,8 @@ pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -
     let mut chart = ChartBuilder::on(&root)
         .margin(20)
         .x_label_area_size(75)
-        .y_label_area_size(75)
-        .build_ranged(0..days, 0.0..max_value(series.iter().map(|x| x.clone())))
+        .y_label_area_size(100)
+        .build_ranged(0..days, 0.0..max_value(series.iter().map(|x| x.clone()))*1.05)
         .map_err(|_| "unable to draw chart")?;
 
     chart
@@ -25,20 +26,24 @@ pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -
         .x_desc("Day")
         .y_desc("Cases")
         .x_labels(15)
+        .x_label_formatter(&|i| data_set.dates.get(*i).map(|d| d.format("%b %d").to_string()).unwrap_or_default())
+        .y_label_formatter(&|v| {
+            let v_u64 : u64 = *v as u64;
+            v_u64.to_formatted_string(&Locale::en)
+        })
         .label_style(("sans-serif", 15).into_font().color(&WHITE))
         .draw()
         .map_err(|_| "unable to draw mesh")?;
 
-    for &s in &series {
+    for (idx, &s) in series.iter().enumerate() {
         chart.draw_series(
-            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), &RED),
+            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), &Palette99::pick(idx)),
         ).unwrap()
-        .label(&s.region.country);
+        .label(&s.region.country)
+        .legend(move |(x, y)| {
+            Rectangle::new([(x - 5, y - 5), (x + 5, y + 5)], &Palette99::pick(idx))
+        });
     }
-
-    //chart.draw_series(
-        //LineSeries::new((0..100).map(|x| (x, 100 - x)), &WHITE),
-    //).unwrap();
 
     Ok(())
 }

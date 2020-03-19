@@ -11,6 +11,7 @@ extern crate yew_router;
 extern crate plotters;
 extern crate chrono;
 extern crate csv;
+extern crate num_format;
 use wasm_bindgen::prelude::*;
 
 mod app;
