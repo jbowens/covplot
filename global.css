@@ -16,16 +16,7 @@ ul {
 
 #graph canvas {
     flex-grow: 0;
-    height: 90vh;
 }
 
 #canvas-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin: 0 2em;
-}
-
-#canvas-container {
-    flex: 1;
 }

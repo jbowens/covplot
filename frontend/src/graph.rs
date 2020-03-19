@@ -6,14 +6,46 @@ use std::future::Future;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
-pub struct Graph {
-    canvas_ref : NodeRef,
-    data : Option<Result<DataSet, String>>,
-    link: ComponentLink<Self>,
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
 }
 
 pub enum Msg {
     GotSeriesData(Result<DataSet, String>)
+}
+
+pub struct Graph {
+    canvas_ref : NodeRef,
+    data : Option<Result<DataSet, String>>,
+    selected : Vec<Region>,
+    link: ComponentLink<Self>,
+}
+
+impl Graph {
+    fn redraw_canvas(&self) {
+        match &self.data {
+            None => {
+                // Construct a future to retrieve series data.
+                let fut = async {
+                    Msg::GotSeriesData(data_source::query().await)
+                };
+                send_future(&self.link, fut);
+            },
+            Some(Ok(data_set)) => {
+                let canvas_opt: Option<HtmlCanvasElement> = self.canvas_ref.cast::<HtmlCanvasElement>();
+                if let Some(canvas) = canvas_opt {
+                    let selected = data_set.select(&self.selected);
+                    graph_render::draw(&data_set, selected, canvas);
+                }
+            },
+            Some(Err(e)) => {
+                log!("error: {}", e);
+            },
+        }
+    }
 }
 
 impl Component for Graph {
@@ -24,6 +56,12 @@ impl Component for Graph {
         Graph {
             canvas_ref: NodeRef::default(),
             data: None,
+            selected: vec![
+                Region::new("US", ""),
+                Region::new("Italy", ""),
+                Region::new("China", ""),
+                Region::new("Spain", ""),
+            ],
             link: link,
         }
     }
@@ -32,6 +70,7 @@ impl Component for Graph {
         match msg {
             Msg::GotSeriesData(res) => {
                 self.data = Some(res);
+                self.redraw_canvas();
             }
         }
         true
@@ -66,18 +105,7 @@ impl Component for Graph {
     }
 
     fn mounted(&mut self) -> ShouldRender {
-        if self.data.is_none() {
-            // Construct a future to retrieve series data.
-            let fut = async {
-                Msg::GotSeriesData(data_source::query().await)
-            };
-            send_future(&self.link, fut);
-        }
-
-        let canvas_opt: Option<HtmlCanvasElement> = self.canvas_ref.cast::<HtmlCanvasElement>();
-        if let Some(canvas) = canvas_opt {
-            graph_render::draw(canvas);
-        }
+        self.redraw_canvas();
         false
     }
  }
@@ -94,7 +122,7 @@ where
 {
     use wasm_bindgen_futures::future_to_promise;
 
-    let mut link = link.clone();
+    let link = link.clone();
     let js_future = async move {
         link.send_message(future.await);
         Ok(JsValue::NULL)
@@ -102,3 +130,4 @@ where
 
     future_to_promise(js_future);
 }
+

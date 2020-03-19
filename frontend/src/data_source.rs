@@ -4,6 +4,7 @@ use web_sys::{Request, RequestInit, RequestMode, Response};
 use csv;
 use crate::data::*;
 use chrono::prelude::*;
+use std::num::ParseIntError;
 
 static CSSE_TIME_SERIES_CONFIRMED : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
 static CSSE_TIME_SERIES_RECOVERED : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv";
@@ -18,10 +19,9 @@ pub async fn query() -> Result<DataSet, String> {
 
     parse_csv(DataType::Confirmed, data.as_bytes())
         .map_err(|e| format!("unable to parse CSSE csv data: {:?}", e))
-        .map(DataSet::new)
 }
 
-fn parse_csv(typ : DataType, raw_data : &[u8]) -> Result<Vec<Series>, csv::Error> {
+fn parse_csv(typ : DataType, raw_data : &[u8]) -> Result<DataSet, csv::Error> {
     let mut rdr = csv::Reader::from_reader(raw_data);
     let headers = rdr.headers()?;
 
@@ -36,19 +36,29 @@ fn parse_csv(typ : DataType, raw_data : &[u8]) -> Result<Vec<Series>, csv::Error
     let mut series = vec![];
     for result in rdr.records() {
         let record = result?;
+        let region = Region{
+            country: record.get(1).unwrap_or("").to_string(),
+            state: record.get(0).unwrap_or("").to_string(),
+        };
+
+        // TODO: if a data point is missing (eg, it's the empty string),
+        // don't replace it with 0.
+        let points: Result<Vec<f64>, ParseIntError> = record
+            .iter()
+            .skip(4)
+            .map(|x| if x == "" { Ok(0) } else { u64::from_str_radix(x, 10) })
+            .map(|x| x.map(|y| y as f64))
+            .collect();
 
         series.push(Series{
-            region: Region{
-                country: record.get(1).unwrap_or("").to_string(),
-                state: record.get(0).unwrap_or("").to_string(),
-            },
+            region: region,
             data_type: typ,
             series_type: SeriesType::Change,
-            points: vec![],
+            points: points.unwrap(), // TODO: don't unwrap
         });
     }
 
-    Ok(series)
+    Ok(DataSet::new(dates, series))
 }
 
 async fn download_csv(url : &str) -> Result<String, JsValue> {
@@ -67,11 +77,4 @@ async fn download_csv(url : &str) -> Result<String, JsValue> {
     // Convert this other `Promise` into a rust `Future`,
     // await it and convert the resulting `JsValue` to a String.
     Ok(JsFuture::from(resp.text()?).await?.as_string().unwrap())
-}
-
-// A macro to provide `println!(..)`-style syntax for `console.log` logging.
-macro_rules! log {
-    ( $( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
-    }
 }

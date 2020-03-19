@@ -1,14 +1,14 @@
 use std::fmt;
-use chrono::prelude::*;
 use std::collections::HashMap;
 
 pub struct DataSet {
+    pub dates : Vec<chrono::NaiveDate>,
     pub series : Vec<Series>,
     pub regions : Vec<(String,Vec<Region>)>,
 }
 
 impl DataSet {
-    pub fn new(raw_series : Vec<Series>) -> DataSet {
+    pub fn new(dates : Vec<chrono::NaiveDate>, raw_series : Vec<Series>) -> DataSet {
         // Remove all series for minor localities.
         let series : Vec<Series> = raw_series
             .into_iter()
@@ -40,7 +40,14 @@ impl DataSet {
         // Sort the countries by their names.
         regions.sort_by(|(a, _), (b, _)| a.cmp(&b));
 
-        DataSet{series, regions}
+        DataSet{dates, series, regions}
+    }
+
+    pub fn select(&self, regions : &[Region]) -> Vec<&Series> {
+       self.series
+           .iter()
+           .filter(|s| regions.contains(&s.region))
+           .collect()
     }
 }
 
@@ -48,21 +55,20 @@ pub struct Series {
     pub region : Region,
     pub data_type: DataType,
     pub series_type : SeriesType,
-    pub points : Vec<Point>,
+    pub points : Vec<f64>,
 }
 
-pub struct Point {
-    pub date : NaiveDate,
-    pub value : u64,
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Region {
     pub country : String,
     pub state : String,
 }
 
 impl Region {
+    pub fn new(country : &str, state : &str) -> Region {
+        Region{country: country.to_string(), state: state.to_string()}
+    }
+
     pub fn is_minor_locality(&self) -> bool {
         // The data source contains some cities and counties
         // where data is more granular. These always have a
