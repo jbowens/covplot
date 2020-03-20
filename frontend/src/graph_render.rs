@@ -37,11 +37,11 @@ pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -
 
     for (idx, &s) in series.iter().enumerate() {
         chart.draw_series(
-            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), Into::<ShapeStyle>::into(&Palette99::pick(idx)).stroke_width(2)),
+            LineSeries::new(s.points.iter().map(|x| *x).enumerate(), Into::<ShapeStyle>::into(&s.region.color()).stroke_width(2)),
         ).unwrap()
         .label(&s.region.country)
         .legend(move |(x, y)| {
-            Rectangle::new([(x - 5, y - 5), (x + 5, y + 5)], Palette99::pick(idx).filled())
+            Rectangle::new([(x - 5, y - 5), (x + 5, y + 5)], s.region.color().filled())
         });
     }
 

@@ -1,5 +1,8 @@
 use std::fmt;
 use std::collections::HashMap;
+use std::hash::Hasher;
+use plotters::prelude::*;
+use std::collections::hash_map::DefaultHasher;
 
 pub struct DataSet {
     pub dates : Vec<chrono::NaiveDate>,
@@ -95,6 +98,31 @@ impl Region {
         // comma separting the minor locality from the state
         // or province.
         self.state.contains(",")
+    }
+
+    pub fn color(&self) -> impl Color {
+        // For some common countries, bake a specific color value.
+        // For all the other countries, compute a specific color by
+        // hashing the region strings and mapping it into a reasonable,
+        // legible portion of the HSL color space.
+        match (self.country.as_str(), self.state.as_str()) {
+            ("US", "") => HSLColor(0.60277, 1.0, 0.59),
+            ("China", "") => HSLColor(0.01944, 0.87, 0.47),
+            ("Italy", "") => HSLColor(0.4166, 1.0, 0.45),
+            ("Spain", "") => HSLColor(0.116, 0.99, 0.58),
+            _ => {
+                let mut hasher = DefaultHasher::new();
+                hasher.write(self.country.as_bytes());
+                hasher.write(self.state.as_bytes());
+                let idx = hasher.finish();
+
+                let max_u64 = u64::max_value() as f64;
+                let pct = idx as f64 / max_u64; // 0 ≤ pct ≤ 1
+                let s = (idx % 113) as f64 / 113.0; // 0 ≤ s ≤ 1
+                let l = (idx % 3463) as f64 / 3463.0; // 0 ≤ l ≤ 1
+                HSLColor(pct, 0.25 + (s/2.0), 0.4 + (l/4.0))
+            },
+        }
     }
 }
 
