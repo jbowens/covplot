@@ -129,8 +129,8 @@ impl Component for Graph {
                     <canvas width=1200 height=800 ref=self.canvas_ref.clone()>
                     </canvas>
                     <div class="source">
-                        {"Source: Data is pulled from John Hopkins University CSSE: "}<a href="https://github.com/CSSEGISandData/COVID-19">{"github.com/CSSEGISandData/COVID-19"}</a>
-                        {". Data is downloaded directly from the JHU CSSE GitHub repository."}
+                        {"Source: Data is pulled from John Hopkins University CSSE: "}<a href="https://github.com/CSSEGISandData/COVID-19" target="_blank">{"github.com/CSSEGISandData/COVID-19"}</a>
+                        {". Data is downloaded directly from the JHU CSSE GitHub repository on page load. Currently, only countries with at least 100 confirmed cases are shown."}
                     </div>
                 </div>
             </div>

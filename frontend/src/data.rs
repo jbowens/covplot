@@ -15,22 +15,12 @@ impl DataSet {
         // Remove all series for minor localities.
         let mut series : Vec<Series> = raw_series
             .into_iter()
-            .filter(|s| !s.region.is_minor_locality())
+            //.filter(|s| !s.region.is_minor_locality()) // Is this necessary???
             .collect();
 
         // Construct a map from country to regions.
-        let mut countries_map : HashMap<String, Vec<Region>> = HashMap::new();
         let mut countries_series : HashMap<String, Series> = HashMap::new();
         for s in series.iter() {
-            match countries_map.get_mut(&s.region.country) {
-                None => {
-                    countries_map.insert(s.region.country.clone(), vec![s.region.clone()]);
-                },
-                Some(states) => {
-                    states.push(s.region.clone());
-                },
-            }
-
             if !s.region.state.is_empty() {
                 match countries_series.get_mut(&s.region.country) {
                     None => {
@@ -49,6 +39,26 @@ impl DataSet {
         }
         let mut countries_agg = countries_series.into_iter().map(|(_, series)| series).collect();
         series.append(&mut countries_agg);
+
+        // TODO: temporarily we're removing all series that aren't at the country level
+        // , and that don't have at least 100 cases.
+        let series : Vec<Series> = series
+            .into_iter()
+            .filter(|s| s.region.state.is_empty())
+            .filter(|s| s.points.last().map(|x| *x).unwrap_or(0.0) >= 100.0)
+            .collect();
+
+        let mut countries_map : HashMap<String, Vec<Region>> = HashMap::new();
+        for s in series.iter() {
+            match countries_map.get_mut(&s.region.country) {
+                None => {
+                    countries_map.insert(s.region.country.clone(), vec![s.region.clone()]);
+                },
+                Some(states) => {
+                    states.push(s.region.clone());
+                },
+            }
+        }
 
         let mut regions : Vec<(String, Vec<Region>)> = countries_map
             .into_iter()

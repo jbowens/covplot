@@ -49,5 +49,5 @@ ul {
     margin: 2em 5em;
     width: 60%;
 }
-a { color: #c9587a; text-decoration: none; }
-a:hover { color: #f05181; }
+a { color: #ccc; text-decoration: none; }
+a:hover { color: #fff; }

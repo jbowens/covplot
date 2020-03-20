@@ -14,6 +14,7 @@ pub fn draw(data_set : &DataSet, series : Vec<&Series>, el: HtmlCanvasElement) -
 
     let mut chart = ChartBuilder::on(&root)
         .margin(20)
+        .caption("Confirmed cases", ("sans-serif", 12).into_font().color(&WHITE))
         .x_label_area_size(75)
         .y_label_area_size(100)
         .build_ranged(0..days, 0.0..max_value(series.iter().map(|x| x.clone()))*1.05)
