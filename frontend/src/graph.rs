@@ -5,6 +5,7 @@ use crate::data_source;
 use std::future::Future;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
+use plotters::style::Color;
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
 macro_rules! log {
@@ -75,7 +76,10 @@ impl Component for Graph {
             },
             Msg::ToggleRegion(region) => {
                 if self.selected.contains(&region) {
-                    self.selected.retain(|r| region != *r);
+                    // don't allow removing the last country
+                    if self.selected.len() > 1 {
+                        self.selected.retain(|r| region != *r);
+                    }
                 } else {
                     self.selected.push(region.clone());
                 };
@@ -94,15 +98,23 @@ impl Component for Graph {
                     .regions
                     .iter()
                     .map(|r| {
-                        let li_class = match self.selected.contains(&Region{country: r.0.clone(), state: "".to_string()}) {
-                            true => "selected",
-                            false => "",
+                        let curr = Region{country: r.0.clone(), state: "".to_string()};
+                        let styling = match self.selected.contains(&curr) {
+                            true => (curr.color().rgb(), "selected"),
+                            false => ((204, 204, 204), ""),
                         };
 
                         // TODO: stop cloning regions every which way
                         let reg = Region::new(&r.0.clone(), "");
 
-                        html!{<li class=li_class onclick=self.link.callback(move |_| Msg::ToggleRegion(reg.clone()))>{format!("{}", r.0)}</li>}
+                        html!{
+                            <li
+                                class=styling.1
+                                style={format!("color: rgb({},{},{});", (styling.0).0, (styling.0).1, (styling.0).2)}
+                                onclick=self.link.callback(move |_| Msg::ToggleRegion(reg.clone()))>
+                                {format!("{}", r.0)}
+                            </li>
+                        }
                     })
                 }
                 </ul>

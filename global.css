@@ -4,13 +4,17 @@ body {
     color: #FFF;
     font-family: 'Sen', sans-serif;
 }
-
+h2 {
+    font-size: 1em;
+    margin: 0.5em;
+    color: #DDD;
+    font-family: 'Helvetica';
+}
 ul {
     list-style: none;
     margin: 0;
     padding: 0;
 }
-
 #regions {
     font-size: 0.8em;
     padding: 0.5em;
@@ -18,6 +22,7 @@ ul {
     overflow: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    flex-shrink: 0;
 }
 #regions::-webkit-scrollbar {
     display: none;
@@ -33,22 +38,11 @@ ul {
     color: #FFF;
     cursor: default;
 }
-
-h2 {
-    font-size: 1em;
-    margin: 0.5em;
-    color: #DDD;
-    font-family: 'Helvetica';
-}
-
 #graph {
     display: flex;
 }
-
-#graph canvas {
-    flex-grow: 0;
-}
-
+#canvas-container {}
+#graph canvas {}
 .source {
     font-size: 0.8em;
     color: #888;
