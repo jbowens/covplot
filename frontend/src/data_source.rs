@@ -6,9 +6,7 @@ use crate::data::*;
 use chrono::prelude::*;
 use std::num::ParseIntError;
 
-static CSSE_TIME_SERIES_CONFIRMED : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
-static CSSE_TIME_SERIES_RECOVERED : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv";
-static CSSE_TIME_SERIES_DEATHS : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv";
+static CSSE_TIME_SERIES_CONFIRMED : &str = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
 
 // TODO: fixup errors
 
